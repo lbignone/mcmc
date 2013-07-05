@@ -1,0 +1,19 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+#include <gsl/gsl_rng.h>
+
+#include "mcmc.h"
+
+mcmc_configuration config;
+
+config.n_iter = 500;
+config.n_param = 2;
+
+config.parameters = malloc(2*sizeof(double));
+config.parameters[0] = 5.0;
+config.parameters[1] = 30.0;
+
+
+int mcmc_run(double* data, mcmc_configuration config, double* results)
