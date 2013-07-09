@@ -2,8 +2,9 @@
 *~
 *.o
 *.so
-build/*
-test/lines
-test/lines.h5
-test/test
-
+*.lo
+Makefile
+config.h
+stamp-h1
+examples/lines
+examples/test
