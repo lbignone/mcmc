@@ -1,10 +1,22 @@
-# ignore all files ending with ~
+# ignore temporary files
 *~
+
+# ignore build objectes
 *.o
 *.so
 *.lo
+
+# ignore autotool output
+*.in
+aclocal.m4
+build-aux
+autom4te.cache
 Makefile
 config.h
+config.log
+config.status
 stamp-h1
+
+# ignore binaries
 examples/lines
 examples/test
