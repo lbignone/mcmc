@@ -11,5 +11,5 @@ AC_CHECK_LIB(gsl,main)
 AX_LIB_HDF5()
 
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([Makefile include/Makefile src/Makefile test/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile examples/Makefile])
 AC_OUTPUT
