@@ -1,6 +1,8 @@
 #ifndef MCMC_H
 #define MCMC_H
 
+#include <gsl/gsl_rng.h>
+
 #include "hdf5.h"
 
 typedef struct mcmc_configuration mcmc_configuration;

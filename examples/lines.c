@@ -11,16 +11,19 @@
 #define NROWS 64
 #define NCOLUMNS 2
 
+/* Define uniform prior*/
 double uniform(double x, double x_min, double x_max)
 {
     return 1.0/(x_max - x_min);
 }
 
+/* Define Jeffreys's prior */
 double jeffreys(double x, double x_min, double x_max)
 {
     return 1.0/(x*log(x_max/x_min));
 }
 
+/* Compute joint prior for T and nu */
 double joint_prior(double* params)
 {
     double nu = params[0];
@@ -50,6 +53,7 @@ double joint_prior(double* params)
     return uniform(nu, nu_min, nu_max) * jeffreys(T, T_min, T_max);
 }
 
+/* Compute data probability given the values of T and nu*/
 double data_probability(double* data, double* params)
 {
 
@@ -78,6 +82,7 @@ double data_probability(double* data, double* params)
     return result;
 }
 
+/* Read data from file*/
 double* read_data(int* n_data)
 {
     char ignore[100];
@@ -113,23 +118,35 @@ int main()
     struct mcmc_configuration config;
     double* results;
 
+    /* Initialize for 2 parameters and 1e5 iterations*/
     config = mcmc_initialize(2, 1e5);
-    config.parameters[0] = 30.0;
+
+    /* Assign starting values */
+    config.parameters[0] = 30.0; 
     config.parameters[1] = 5.0;
 
+    /* Set gaussian proposal distributions with sigma = 1 for both
+       parameters */
     mcmc_set_proposal_distribution(&config, 0, NORMAL, 1.0);
     mcmc_set_proposal_distribution(&config, 1, NORMAL, 1.0);
 
+    /* set the joint prior */
     mcmc_set_joint_prior(&config, &joint_prior);
+
+    /* set the data probability */
     mcmc_set_data_probability(&config, &data_probability);
 
+    /* load data */
     int n_data;
     double* data = read_data(&n_data);
 
+    /* start mcmc loop */
     mcmc_run(config, data, n_data);
 
+    /* set output file */
     mcmc_set_file(&config, "lines.h5");
+
+    /* save traces to disk */
     mcmc_save_trace(config, 0, "nu");
     mcmc_save_trace(config, 1, "T");
-
 }

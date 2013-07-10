@@ -5,6 +5,42 @@
 
 #include "mcmc.h"
 
+/* Print error message to stderr and exit
+ *
+ * Input:
+ * - message: error message
+ */
+void mcmc_error(const char* message)
+{
+    fputs(message, stderr);
+    exit(1);
+}
+
+/* Allocate memory for results*
+ *
+ * Input config: THIS SHOULD CHANGE TO A POINTER (MAYBE)
+ *
+ * Return: pointer to newly allocated array
+*/
+double* mcmc_allocate_results (mcmc_configuration config)
+{
+    int n_iter = config.n_iter;
+    int n_param = config.n_param;
+
+    double* results = malloc(n_iter*n_param*sizeof(double));
+    if (results == NULL)
+        {
+            mcmc_error("mcmc: error allocating memory for results");
+        }
+
+    return results;
+
+}
+
+/* Get a random seed from /dev/random
+ *
+ * Return: random seed
+ */
 unsigned long int mcmc_get_seed()
 {
     unsigned long int seed;
@@ -26,12 +62,11 @@ unsigned long int mcmc_get_seed()
 
 }
 
-void mcmc_set_seed(mcmc_configuration* config, unsigned long int seed)
-{
-    gsl_rng_set (config->gslrng, seed);
-    config->seed = seed;
-}
-
+/* Initialize random number generator
+ *
+ * input:
+ * - config: pointer to mcmc_configuration struct
+*/
 void mcmc_initialize_rng(mcmc_configuration* config)
 {
     const gsl_rng_type * T;

@@ -6,7 +6,7 @@
 *.so
 *.lo
 
-# ignore autotool output
+# ignore autotools output
 *.in
 aclocal.m4
 build-aux
