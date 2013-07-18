@@ -172,6 +172,10 @@ int mcmc_run (mcmc_configuration config, double* data, int n_data)
     memcpy(results, config.parameters, n_param*sizeof(double));
     memcpy(params, config.parameters, n_param*sizeof(double));
 
+    config.current_posterior = (config.joint_prior(params)
+				*config.data_probability(data, params));
+
+
     int ACCEPTED;
     double u;
     int i, j, offset;
@@ -188,8 +192,7 @@ int mcmc_run (mcmc_configuration config, double* data, int n_data)
             proposed_posterior = (config.joint_prior(proposed_params)
 				 *config.data_probability(data, proposed_params));
 
-            current_posterior = (config.joint_prior(params)
-				 *config.data_probability(data, params));
+            current_posterior = config.current_posterior;
 
             metropolis_ratio = proposed_posterior/current_posterior;
 
@@ -208,6 +211,7 @@ int mcmc_run (mcmc_configuration config, double* data, int n_data)
             if (ACCEPTED)
                 {
                     memcpy(params, proposed_params, n_param*sizeof(double));
+		    config.current_posterior = proposed_posterior;
                 }
             offset = i*n_param;
             memcpy(results+offset, params, n_param*sizeof(double));

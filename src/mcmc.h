@@ -14,7 +14,8 @@ struct mcmc_configuration
 
     int n_param;
     double* parameters;
-    
+
+  double current_posterior;  
 
     double (*joint_prior)(double* params);
     double (**proposal_distributions)
