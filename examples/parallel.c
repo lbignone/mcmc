@@ -12,12 +12,14 @@
 const gsl_rng_type * T_c;
 gsl_rng * r_c;
 
-int n = 100;
+/* total number of data point to generate */
+int n = 100; 
 
+/* Parameters of the target distribution */
 double sigma = 1.0;
 double mu = 5.0;
 
-/* Define uniform prior*/
+/* Uniform prior*/
 double uniform(double x, double x_min, double x_max)
 {
     return 1.0/(x_max - x_min);
@@ -33,6 +35,11 @@ double joint_prior(double* params)
     return uniform(mu_p, mu_min, mu_max);
 }
 
+/* 
+   Generate n data points with the target distribution and compute the probability of obtaining those same data points with a distribution given by params 
+
+   Only the root process computes the final result;
+*/
 double data_probability(double* data, double* params)
 {
     double x;
@@ -72,7 +79,6 @@ int main ()
     
     MPI_Init(NULL, NULL);
 
-
     gsl_rng_env_setup();
     T_c = gsl_rng_default;
     r_c = gsl_rng_alloc (T_c);
@@ -84,10 +90,6 @@ int main ()
     
     double *data, *results;
     struct mcmc_configuration config;
-
-    int tot_number = floor(n/numtasks)*numtasks;
-    if (rank == 0)
-	data = malloc(tot_number*sizeof(double));
 
     config = mcmc_initialize(1, 1e7);
 
@@ -101,6 +103,7 @@ int main ()
 
     mcmc_run(config, data, n_data);
 
+    /* Only processor 0 writes the results */
     if (rank == 0)
     {
 	mcmc_set_file(&config, "parallel.h5");
