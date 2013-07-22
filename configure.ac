@@ -9,6 +9,10 @@ AC_CHECK_LIB(m,main)
 AC_CHECK_LIB(gslcblas,main)
 AC_CHECK_LIB(gsl,main)
 AX_LIB_HDF5()
+LX_FIND_MPI()
+
+# Allow CPPFLAGS per target
+AM_PROG_CC_C_O
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile src/Makefile examples/Makefile])
