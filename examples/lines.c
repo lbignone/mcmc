@@ -140,13 +140,15 @@ int main()
     int n_data;
     double* data = read_data(&n_data);
 
-    /* start mcmc loop */
-    mcmc_run(config, data, n_data);
 
     /* set output file */
     mcmc_set_file(&config, "lines.h5");
 
+    /* start mcmc loop */
+    mcmc_run(config, data, n_data);
+    
     /* save traces to disk */
     mcmc_save_trace(config, 0, "nu");
     mcmc_save_trace(config, 1, "T");
+    
 }

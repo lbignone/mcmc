@@ -50,7 +50,7 @@ mcmc_configuration mcmc_initialize (int n_param, int n_iter)
     return config;
 }
 
-/* Set proposal distribution
+/* Set proposal dsistribution
  *
  * For a Gaussian proposal the proposal_type should be set to NORMAL
  * and the standard deviation should be given as the only extra argument
@@ -85,6 +85,12 @@ void mcmc_set_proposal_distribution(mcmc_configuration *config,
                 *(double*)config->proposal_distribution_args[param_num] = sigma;
                 va_end ( arguments );
             }
+	case FIX:
+	    {
+		p_proposal_distribution = &mcmc_fix;
+		config->proposal_distributions[param_num]
+		    = p_proposal_distribution;
+	    }
             break;
         }
 }
@@ -149,7 +155,7 @@ void mcmc_set_seed(mcmc_configuration* config, unsigned long int seed)
  * 
  * Return: 0
 */
-int mcmc_run (mcmc_configuration config, double* data, int n_data)
+double mcmc_run (mcmc_configuration config, double* data, int n_data)
 {
     int n_iter = config.n_iter;
     int n_param = config.n_param;
@@ -179,6 +185,7 @@ int mcmc_run (mcmc_configuration config, double* data, int n_data)
     int ACCEPTED;
     double u;
     int i, j, offset;
+    int accepted_number = 0;
     for (i=1; i<n_iter; i++)
         {
             ACCEPTED = 0;
@@ -212,12 +219,14 @@ int mcmc_run (mcmc_configuration config, double* data, int n_data)
                 {
                     memcpy(params, proposed_params, n_param*sizeof(double));
 		    config.current_posterior = proposed_posterior;
+		    accepted_number++;
                 }
             offset = i*n_param;
             memcpy(results+offset, params, n_param*sizeof(double));
         }
     gsl_rng_free (r);
-    return 0;
+    double acceptance_rate = accepted_number/n_iter;
+    return acceptance_rate;
 }
 
 /* Set output file

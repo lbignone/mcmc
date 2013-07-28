@@ -21,3 +21,8 @@ double mcmc_normal(mcmc_configuration config, double mu, int param_num)
     x = gsl_ran_gaussian (r, sigma);
     return mu + x;
 }
+
+double mcmc_fix(mcmc_configuration config, double mu, int param_num)
+{
+    return mu;
+}
