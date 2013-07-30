@@ -256,5 +256,10 @@ int mcmc_set_file(mcmc_configuration* config, const char* file_name)
 */
 void mcmc_free(mcmc_configuration* config)
 {
-    /* TO DO*/
+    free(config->proposal_distributions);
+    free(config->proposal_distribution_args);
+    free(config->results);
+    
+    H5Fclose (config->file_id);
+    free(config);
 }
