@@ -147,8 +147,12 @@ int main()
     /* start mcmc loop */
     mcmc_run(config, data, n_data);
     
+    const char *field_names[2] = {"nu", "T"};
+    mcmc_set_table(config, field_names);
+
     /* save traces to disk */
     mcmc_save_trace(config, 0, "nu");
     mcmc_save_trace(config, 1, "T");
-    
+
+    mcmc_save_traces(config);
 }

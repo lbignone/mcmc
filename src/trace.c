@@ -55,3 +55,58 @@ int mcmc_save_trace(mcmc_configuration config, int param_num,
 		      dims, H5T_NATIVE_DOUBLE, trace);
     return 0;
 }
+
+int mcmc_set_table(mcmc_configuration config, const char* field_names)
+{
+    int n_param = config.n_param;
+    hid_t field_types[n_param];
+
+    size_t dst_offsets[n_param];
+    size_t dst_sizes[n_param];
+
+    size_t dst_size = n_param*sizeof(double);
+
+    int i;
+    for (i=0; i<n_param; i++)
+    {
+	field_types[i] = H5T_NATIVE_DOUBLE;	    
+	dst_sizes[i] = sizeof(double);
+	dst_offsets[i] = i*sizeof(double);
+    }
+
+    hsize_t chunk_size = 10;
+    int *fill_data = NULL;
+    int compress = 0;
+
+    
+	
+
+    herr_t status;
+    status = H5TBmake_table("Traces", config.file_id, "Traces", n_param, 1, 
+			    dst_size, field_names, dst_offsets, field_types,
+			    chunk_size, fill_data, compress, config.parameters);
+}
+
+int mcmc_save_traces(mcmc_configuration config)
+{
+    int n_param = config.n_param;
+    int n_iter = config.n_iter;
+    
+    size_t dst_offsets[n_param];
+    size_t dst_sizes[n_param];
+
+    size_t dst_size = n_param*sizeof(double);
+
+    int i;
+    for (i=0; i<n_param; i++)
+    {
+	dst_sizes[i] = sizeof(double);
+	dst_offsets[i] = i*sizeof(double);
+    }
+
+    herr_t status;
+    status = H5TBappend_records(config.file_id, "Traces", n_iter,
+				dst_size, dst_offsets, dst_sizes, 
+				config.results);
+    
+}
