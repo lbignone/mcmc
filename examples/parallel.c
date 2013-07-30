@@ -91,7 +91,7 @@ int main ()
     double *data, *results;
     struct mcmc_configuration config;
 
-    config = mcmc_initialize(1, 1e7);
+    config = mcmc_initialize(1, 50, 100);
 
     config.parameters[0] = 0.0; 
     
@@ -101,7 +101,7 @@ int main ()
     
     mcmc_set_data_probability(&config, &data_probability);
 
-    mcmc_run(config, data, n_data);
+    mcmc_run(config, data);
 
     /* Only processor 0 writes the results */
     if (rank == 0)

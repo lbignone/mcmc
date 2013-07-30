@@ -119,7 +119,7 @@ int main()
     double* results;
 
     /* Initialize for 2 parameters and 1e5 iterations*/
-    config = mcmc_initialize(2, 1e5);
+    config = mcmc_initialize(2, 50, 2000);
 
     /* Assign starting values */
     config.parameters[0] = 30.0; 
@@ -144,15 +144,16 @@ int main()
     /* set output file */
     mcmc_set_file(&config, "lines.h5");
 
-    /* start mcmc loop */
-    mcmc_run(config, data, n_data);
-    
+    /* set table */
     const char *field_names[2] = {"nu", "T"};
     mcmc_set_table(config, field_names);
-
+    
+    /* start mcmc loop */
+    mcmc_run(config, data);
+    
     /* save traces to disk */
     mcmc_save_trace(config, 0, "nu");
     mcmc_save_trace(config, 1, "T");
 
-    mcmc_save_traces(config);
+    
 }

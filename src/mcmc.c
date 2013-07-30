@@ -18,11 +18,13 @@
  *
  * Returns: a mcmc_configuration structure
  */
-mcmc_configuration mcmc_initialize (int n_param, int n_iter)
+mcmc_configuration mcmc_initialize (int n_param, int n_iter, int n_times)
 {
     mcmc_configuration config;
 
     config.n_iter = n_iter;
+    config.n_times = n_times;
+    
     config.n_param = n_param;
 
     config.parameters = calloc(n_param, sizeof(double));
@@ -156,9 +158,10 @@ void mcmc_set_seed(mcmc_configuration* config, unsigned long int seed)
  * 
  * Return: 0
 */
-double mcmc_run (mcmc_configuration config, double* data, int n_data)
+double mcmc_run (mcmc_configuration config, double* data)
 {
     int n_iter = config.n_iter;
+    int n_times = config.n_times;
     int n_param = config.n_param;
     double* results = config.results;
 
@@ -176,7 +179,6 @@ double mcmc_run (mcmc_configuration config, double* data, int n_data)
     T = gsl_rng_default;
     r = gsl_rng_alloc (T);
 
-    memcpy(results, config.parameters, n_param*sizeof(double));
     memcpy(params, config.parameters, n_param*sizeof(double));
 
     config.current_posterior = (config.joint_prior(params)
@@ -185,46 +187,51 @@ double mcmc_run (mcmc_configuration config, double* data, int n_data)
 
     int ACCEPTED;
     double u;
-    int i, j, offset;
+    int i, j, k, offset;
     int accepted_number = 0;
-    for (i=1; i<n_iter; i++)
+    for (k=0; k<n_times; k++)
+    {
+	for (i=0; i<n_iter; i++)
         {
             ACCEPTED = 0;
             for (j=0; j<n_param; j++)
-                {
-                    proposed_params[j] =
-                        (*config.proposal_distributions[j])
-                        (config, params[j], j);
-                }
+	    {
+		proposed_params[j] =
+		    (*config.proposal_distributions[j])
+		    (config, params[j], j);
+	    }
 
             proposed_posterior = (config.joint_prior(proposed_params)
-				 *config.data_probability(data, proposed_params));
+				  *config.data_probability(data,
+							   proposed_params));
 
             current_posterior = config.current_posterior;
 
             metropolis_ratio = proposed_posterior/current_posterior;
 
             if (metropolis_ratio >= 1)
-                {
-                    ACCEPTED = 1;
-                }
+	    {
+		ACCEPTED = 1;
+	    }
             else
-                {
-                    u = gsl_rng_uniform (r);
-                    if (u <= metropolis_ratio)
-                        {
-                            ACCEPTED = 1;
-                        }
-                }
+	    {
+		u = gsl_rng_uniform (r);
+		if (u <= metropolis_ratio)
+		{
+		    ACCEPTED = 1;
+		}
+	    }
             if (ACCEPTED)
-                {
-                    memcpy(params, proposed_params, n_param*sizeof(double));
-		    config.current_posterior = proposed_posterior;
-		    accepted_number++;
-                }
+	    {
+		memcpy(params, proposed_params, n_param*sizeof(double));
+		config.current_posterior = proposed_posterior;
+		accepted_number++;
+	    }
             offset = i*n_param;
             memcpy(results+offset, params, n_param*sizeof(double));
         }
+	mcmc_save_traces(config);
+    }
     gsl_rng_free (r);
     double acceptance_rate = accepted_number/n_iter;
     return acceptance_rate;

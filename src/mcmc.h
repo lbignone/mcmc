@@ -11,6 +11,7 @@ typedef enum mcmc_proposal_type mcmc_proposal_type;
 struct mcmc_configuration
 {
     int n_iter;
+    int n_times;
 
     int n_param;
     double* parameters;
@@ -41,12 +42,12 @@ enum mcmc_proposal_type
 
 
 void mcmc_error(const char* message);
-mcmc_configuration mcmc_initialize (int n_param, int n_iter);
+mcmc_configuration mcmc_initialize (int n_param, int n_iter, int n_times);
 double* mcmc_allocate_results(mcmc_configuration config);
 double mcmc_normal(mcmc_configuration config, double mu, int param_num);
 double mcmc_fix(mcmc_configuration config, double mu, int param_num);
 double* mcmc_trace(mcmc_configuration config, int param_num);
-double mcmc_run(mcmc_configuration config, double* data, int n_data);
+double mcmc_run(mcmc_configuration config, double* data);
 
 int mcmc_set_table(mcmc_configuration config, const char* field_names);
 int mcmc_save_traces(mcmc_configuration config);
