@@ -84,14 +84,15 @@ void mcmc_set_proposal_distribution(mcmc_configuration *config,
                     = malloc(sizeof(double));
                 *(double*)config->proposal_distribution_args[param_num] = sigma;
                 va_end ( arguments );
+		break;
             }
 	case FIX:
 	    {
 		p_proposal_distribution = &mcmc_fix;
 		config->proposal_distributions[param_num]
 		    = p_proposal_distribution;
+		break;
 	    }
-            break;
         }
 }
 
