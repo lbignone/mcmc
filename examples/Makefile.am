@@ -2,13 +2,14 @@ AM_CPPFLAGS = -I$(srcdir)/../src
 bin_PROGRAMS = lines test parallel
 
 lines_SOURCES = lines.c
-lines_LDADD = ../src/libmcmc.la -lhdf5 -lhdf5_hl
+lines_CPPFLAGS = -I$(HOME)/local/include -I$(srcdir)/../src
+lines_LDADD = -L$(HOME)/local/lib ../src/libmcmc.la -lhdf5 -lhdf5_hl -lgsl -lgslcblas
 
 test_sources = test.c
-test_CPPFLAGS = $(MPI_CFLAGS)
+test_CPPFLAGS = $(MPI_CFLAGS) -I$(HOME)/local/include/ -I$(srcdir)/../src
 test_LDADD = $(MPI_CLDFLAGS)
 
 parallel_sources = parallel.c
 
-parallel_CPPFLAGS = -I$(srcdir)/../src $(MPI_CFLAGS)
-parallel_LDADD = ../src/libmcmc.la -lhdf5 -lhdf5_hl $(MPI_CLDFLAGS)
+parallel_CPPFLAGS = -I$(srcdir)/../src $(MPI_CFLAGS) -I$(HOME)/local/include
+parallel_LDADD = -L$(HOME)/local/lib ../src/libmcmc.la -lhdf5 -lhdf5_hl $(MPI_CLDFLAGS) -lgsl -lgslcblas
