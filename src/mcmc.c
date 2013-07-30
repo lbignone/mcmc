@@ -24,7 +24,7 @@ mcmc_configuration mcmc_initialize (int n_param, int n_iter, int n_times)
 
     config.n_iter = n_iter;
     config.n_times = n_times;
-    
+       
     config.n_param = n_param;
 
     config.parameters = calloc(n_param, sizeof(double));
@@ -48,6 +48,8 @@ mcmc_configuration mcmc_initialize (int n_param, int n_iter, int n_times)
     config.results = mcmc_allocate_results(config);
 
     mcmc_initialize_rng(&config);
+
+    config.save_function = &mcmc_save_traces;
 
     return config;
 }
@@ -172,13 +174,7 @@ double mcmc_run (mcmc_configuration config, double* data)
     double proposed_posterior;
     double current_posterior;
 
-    const gsl_rng_type * T;
-    gsl_rng * r;
-
-    gsl_rng_env_setup();
-    T = gsl_rng_default;
-    r = gsl_rng_alloc (T);
-
+   
     memcpy(params, config.parameters, n_param*sizeof(double));
 
     config.current_posterior = (config.joint_prior(params)
@@ -215,7 +211,7 @@ double mcmc_run (mcmc_configuration config, double* data)
 	    }
             else
 	    {
-		u = gsl_rng_uniform (r);
+		u = gsl_rng_uniform (config.gslrng);
 		if (u <= metropolis_ratio)
 		{
 		    ACCEPTED = 1;
@@ -230,9 +226,8 @@ double mcmc_run (mcmc_configuration config, double* data)
             offset = i*n_param;
             memcpy(results+offset, params, n_param*sizeof(double));
         }
-	mcmc_save_traces(config);
+	config.save_function(config);
     }
-    gsl_rng_free (r);
     double acceptance_rate = accepted_number/n_iter;
     return acceptance_rate;
 }

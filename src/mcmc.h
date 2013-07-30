@@ -24,6 +24,8 @@ struct mcmc_configuration
     double (*data_probability)(double* data, double* params);
     void** proposal_distribution_args;
 
+    int (*save_function)(mcmc_configuration config);
+
     double* results;
 
     hid_t file_id;
