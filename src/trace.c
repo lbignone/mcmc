@@ -56,7 +56,7 @@ int mcmc_save_trace(mcmc_configuration config, int param_num,
     return 0;
 }
 
-int mcmc_set_table(mcmc_configuration config, const char* field_names)
+int mcmc_set_table(mcmc_configuration config, const char* field_names[])
 {
     int n_param = config.n_param;
     hid_t field_types[n_param];

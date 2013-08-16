@@ -57,7 +57,7 @@ double mcmc_fix(mcmc_configuration config, double mu, int param_num);
 double* mcmc_trace(mcmc_configuration config, int param_num);
 double mcmc_run(mcmc_configuration config, double* data);
 
-int mcmc_set_table(mcmc_configuration config, const char* field_names);
+int mcmc_set_table(mcmc_configuration config, const char* field_names[]);
 int mcmc_save_traces(mcmc_configuration config);
 
 double mcmc_uniform(double x, double x_min, double x_max);
