@@ -46,6 +46,11 @@ mcmc_configuration mcmc_initialize (int n_param, int n_iter, int n_times)
         }
 
     config.results = mcmc_allocate_results(config);
+    config.probability = malloc(n_iter*sizeof(double));
+    config.accepted = malloc(n_iter*sizeof(int));
+    config.accepted[0] = 0;
+
+    config.proposed = malloc(n_param*n_iter*sizeof(double));
 
     mcmc_initialize_rng(&config);
 
@@ -54,7 +59,7 @@ mcmc_configuration mcmc_initialize (int n_param, int n_iter, int n_times)
     return config;
 }
 
-/* Set proposal dsistribution
+/* Set proposal distribution
  *
  * For a Gaussian proposal the proposal_type should be set to NORMAL
  * and the standard deviation should be given as the only extra argument
@@ -166,6 +171,7 @@ double mcmc_run (mcmc_configuration config, double* data)
     int n_times = config.n_times;
     int n_param = config.n_param;
     double* results = config.results;
+    double* proposed = config.proposed;
 
     double params[n_param];
     double proposed_params[n_param];
@@ -173,13 +179,13 @@ double mcmc_run (mcmc_configuration config, double* data)
     double metropolis_ratio;
     double proposed_posterior;
     double current_posterior;
-
+    double data_prob;
    
     memcpy(params, config.parameters, n_param*sizeof(double));
 
+    data_prob = config.data_probability(data, params);
     config.current_posterior = (config.joint_prior(params)
-				*config.data_probability(data, params));
-
+				*data_prob);
 
     int ACCEPTED;
     double u;
@@ -197,14 +203,15 @@ double mcmc_run (mcmc_configuration config, double* data)
 		    (config, params[j], j);
 	    }
 
+	    data_prob = config.data_probability(data, proposed_params);
             proposed_posterior = (config.joint_prior(proposed_params)
-				  *config.data_probability(data,
-							   proposed_params));
+				  *data_prob);
 
             current_posterior = config.current_posterior;
 
             metropolis_ratio = proposed_posterior/current_posterior;
 
+	    config.accepted[i] = 0;
             if (metropolis_ratio >= 1)
 	    {
 		ACCEPTED = 1;
@@ -222,9 +229,12 @@ double mcmc_run (mcmc_configuration config, double* data)
 		memcpy(params, proposed_params, n_param*sizeof(double));
 		config.current_posterior = proposed_posterior;
 		accepted_number++;
+		config.accepted[i] = 1;
 	    }
             offset = i*n_param;
             memcpy(results+offset, params, n_param*sizeof(double));
+	    config.probability[i] = data_prob;
+	    memcpy(proposed+offset, proposed_params, n_param*sizeof(double));
         }
 	config.save_function(config);
     }
@@ -245,9 +255,49 @@ int mcmc_set_file(mcmc_configuration* config, const char* file_name)
     hid_t file_id;
     
     file_id = H5Fcreate(file_name, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-
     config->file_id = file_id;    
+
     return 0;
+}
+
+int mcmc_set_meta(mcmc_configuration* config)
+{
+    hid_t file_id = config->file_id;
+
+    int n_meta = 1;
+    hid_t field_types[n_meta];
+    size_t dst_offsets[n_meta];
+    size_t dst_sizes[n_meta];
+
+    size_t dst_size = n_meta*sizeof(double);
+    field_types[0] = H5T_NATIVE_DOUBLE;	    
+    dst_sizes[0] = sizeof(double);
+    dst_offsets[0] = 0;
+    
+    const char *field_names[1] = {"probability"};
+
+    hsize_t chunk_size = 10;
+    int *fill_data = NULL;
+    int compress = 0;
+
+    herr_t status;
+    status = H5TBmake_table("Meta", file_id, "Probability", n_meta, 0, 
+			    dst_size, field_names, dst_offsets, field_types,
+			    chunk_size, fill_data, compress, NULL);
+
+    dst_size = n_meta*sizeof(int);
+    field_types[0] = H5T_NATIVE_INT;	    
+    dst_sizes[0] = sizeof(int);
+    dst_offsets[0] = 0;
+    
+    const char *field_names_2[1] = {"accepted"};
+
+    status = H5TBmake_table("Meta", file_id, "Accepted", n_meta, 0, 
+			    dst_size, field_names_2, dst_offsets, field_types,
+			    chunk_size, fill_data, compress, config->accepted);
+
+
+
 }
 
 /* Free all memory associated with a mcmc_configuration

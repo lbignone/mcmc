@@ -85,6 +85,12 @@ int mcmc_set_table(mcmc_configuration config, const char* field_names)
     status = H5TBmake_table("Traces", config.file_id, "Traces", n_param, 1, 
 			    dst_size, field_names, dst_offsets, field_types,
 			    chunk_size, fill_data, compress, config.parameters);
+
+    status = H5TBmake_table("Proposed", config.file_id, "Proposed", n_param, 0, 
+			    dst_size, field_names, dst_offsets, field_types,
+			    chunk_size, fill_data, compress, config.parameters);
+
+    
 }
 
 int mcmc_save_traces(mcmc_configuration config)
@@ -108,5 +114,22 @@ int mcmc_save_traces(mcmc_configuration config)
     status = H5TBappend_records(config.file_id, "Traces", n_iter,
 				dst_size, dst_offsets, dst_sizes, 
 				config.results);
+
+    status = H5TBappend_records(config.file_id, "Proposed", n_iter,
+				dst_size, dst_offsets, dst_sizes, 
+				config.proposed);
+
+    size_t dst_offsets_meta[1];
+    size_t dst_sizes_meta[1];
+    dst_offsets_meta[0] = 0;
+    dst_sizes_meta[0] = sizeof(double);
+
+    status = H5TBappend_records(config.file_id, "Probability", n_iter,
+				sizeof(double), dst_offsets_meta, 
+				dst_sizes_meta, config.probability);
     
+    dst_sizes_meta[0] = sizeof(int);
+    status = H5TBappend_records(config.file_id, "Accepted", n_iter,
+				sizeof(int), dst_offsets_meta, 
+				dst_sizes_meta, config.accepted);
 }

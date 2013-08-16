@@ -33,6 +33,12 @@ struct mcmc_configuration
     unsigned long int seed;
 
     gsl_rng * gslrng;
+
+    double *probability;
+    double initial_data_prob;
+    double *proposed;
+
+    int *accepted;
     
 };
 

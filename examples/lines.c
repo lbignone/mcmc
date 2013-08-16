@@ -144,6 +144,8 @@ int main()
     /* set output file */
     mcmc_set_file(&config, "lines.h5");
 
+    mcmc_set_meta(&config);
+
     /* set table */
     const char *field_names[2] = {"nu", "T"};
     mcmc_set_table(config, field_names);
