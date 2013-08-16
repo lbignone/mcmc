@@ -152,10 +152,4 @@ int main()
     
     /* start mcmc loop */
     mcmc_run(config, data);
-    
-    /* save traces to disk */
-    mcmc_save_trace(config, 0, "nu");
-    mcmc_save_trace(config, 1, "T");
-
-    
 }
