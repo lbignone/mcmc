@@ -255,9 +255,65 @@ int mcmc_set_file(mcmc_configuration* config, const char* file_name)
     hid_t file_id;
     
     file_id = H5Fcreate(file_name, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-    config->file_id = file_id;    
+    config->file_id = file_id;
 
     return 0;
+}
+
+
+/* Continue from existing file
+ *
+ * Recover the last state of a previously generated file and continue
+ * from there. 
+ *
+ * Only recover the last parameter state, not the proposal arguments
+ *
+ * Input:
+ * - config:    pointer to a mcmc_configuration struct
+ * - file_name: name of file to be open
+ * 
+ * Return: 0
+ */
+int mcmc_continue_from_file(mcmc_configuration* config, const char* file_name)
+{
+    int i;
+    hid_t file_id;
+
+    herr_t err;
+    hsize_t nfields, nrecords;
+
+    file_id = H5Fopen(file_name, H5F_ACC_RDWR, H5P_DEFAULT);
+    if (file_id < 0)
+	mcmc_error("mcmc: Could not open file\n");
+
+    err =  H5TBget_table_info (file_id, "Traces", &nfields, &nrecords);
+    if (err < 0)
+	mcmc_error("mcmc: Could not open Traces table\n");
+
+    size_t *field_offset = malloc(nfields*sizeof(size_t));
+    size_t *dst_size = malloc(nfields*sizeof(size_t));
+    for (i=0; i < nfields; ++i)
+    {
+	field_offset[i] = i*sizeof(double);
+	dst_size[i] = sizeof(double);
+    }
+
+    size_t type_size = nfields*sizeof(double);
+
+    double *data = malloc(nfields*sizeof(double));
+
+    err = H5TBread_records(file_id, "Traces", nrecords-1, 1, type_size,
+    			   field_offset, dst_size, data);
+
+    if (err < 0)
+	mcmc_error("mcmc: Could not read Traces table\n");
+
+    if (nfields != config->n_param)
+	mcmc_error("mcmc: Incompatible file\n");
+	
+    config->file_id = file_id;
+    for(i=0; i<nfields; i++)
+    	config->parameters[i] = data[i];
 }
 
 int mcmc_set_meta(mcmc_configuration* config)
@@ -296,7 +352,7 @@ int mcmc_set_meta(mcmc_configuration* config)
 			    dst_size, field_names_2, dst_offsets, field_types,
 			    chunk_size, fill_data, compress, config->accepted);
 
-
+    
 
 }
 
