@@ -59,6 +59,7 @@ double mcmc_run(mcmc_configuration config, double* data);
 
 int mcmc_set_table(mcmc_configuration config, const char* field_names[]);
 int mcmc_save_traces(mcmc_configuration config);
+int mcmc_continue_from_file(mcmc_configuration* config, const char* file_name);
 
 double mcmc_uniform(double x, double x_min, double x_max);
 double mcmc_jeffreys(double x, double x_min, double x_max);
