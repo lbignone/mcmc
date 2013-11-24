@@ -50,6 +50,8 @@ mcmc_configuration mcmc_initialize (int n_param, int n_iter, int n_times)
     config.accepted = malloc(n_iter*sizeof(int));
     config.accepted[0] = 0;
 
+    config.log_probability = 0;
+
     config.proposed = malloc(n_param*n_iter*sizeof(double));
 
     mcmc_initialize_rng(&config);
@@ -209,7 +211,10 @@ double mcmc_run (mcmc_configuration config, double* data)
 
             current_posterior = config.current_posterior;
 
-            metropolis_ratio = proposed_posterior/current_posterior;
+            if(config.log_probability)
+                metropolis_ratio = exp(proposed_posterior - current_posterior);
+            else
+                metropolis_ratio = proposed_posterior/current_posterior;
 
 	    config.accepted[i] = 0;
             if (metropolis_ratio >= 1)

@@ -32,6 +32,8 @@ struct mcmc_configuration
 
     unsigned long int seed;
 
+    double log_probability;
+
     gsl_rng * gslrng;
 
     double *probability;
@@ -39,7 +41,6 @@ struct mcmc_configuration
     double *proposed;
 
     int *accepted;
-    
 };
 
 enum mcmc_proposal_type
