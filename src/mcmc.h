@@ -32,7 +32,7 @@ struct mcmc_configuration
 
     unsigned long int seed;
 
-    double log_probability;
+    int log_probability;
 
     gsl_rng * gslrng;
 

@@ -182,10 +182,22 @@ double mcmc_run (mcmc_configuration config, double* data)
     double proposed_posterior;
     double current_posterior;
     double data_prob;
+    double prior;
    
     memcpy(params, config.parameters, n_param*sizeof(double));
 
     data_prob = config.data_probability(data, params);
+    prior = config.joint_prior(params);
+
+    if(config.log_probability)
+    {
+        config.current_posterior = log(prior) + data_prob;
+    }
+    else
+    {
+        config.current_posterior = (prior*data_prob);
+    }
+
     config.current_posterior = (config.joint_prior(params)
 				*data_prob);
 
@@ -206,29 +218,41 @@ double mcmc_run (mcmc_configuration config, double* data)
 	    }
 
 	    data_prob = config.data_probability(data, proposed_params);
-            proposed_posterior = (config.joint_prior(proposed_params)
-				  *data_prob);
+            prior = config.joint_prior(proposed_params);
+            if (prior != 0.0)
+            {    
+                current_posterior = config.current_posterior;
+                
+                if(config.log_probability)
+                {
+                    proposed_posterior = log(prior) + data_prob;
+                    metropolis_ratio = exp(proposed_posterior - current_posterior);
+                }
+                else
+                {
+                    proposed_posterior = (prior*data_prob);
+                    metropolis_ratio = proposed_posterior/current_posterior;
+                }
 
-            current_posterior = config.current_posterior;
-
-            if(config.log_probability)
-                metropolis_ratio = exp(proposed_posterior - current_posterior);
+                config.accepted[i] = 0;
+                if (metropolis_ratio >= 1)
+                {
+                    ACCEPTED = 1;
+                }
+                else
+                {
+                    u = gsl_rng_uniform (config.gslrng);
+                    if (u <= metropolis_ratio)
+                    {
+                        ACCEPTED = 1;
+                    }
+                }
+            }
             else
-                metropolis_ratio = proposed_posterior/current_posterior;
+            {
+                data_prob = 0.0;
+            }
 
-	    config.accepted[i] = 0;
-            if (metropolis_ratio >= 1)
-	    {
-		ACCEPTED = 1;
-	    }
-            else
-	    {
-		u = gsl_rng_uniform (config.gslrng);
-		if (u <= metropolis_ratio)
-		{
-		    ACCEPTED = 1;
-		}
-	    }
             if (ACCEPTED)
 	    {
 		memcpy(params, proposed_params, n_param*sizeof(double));
@@ -236,7 +260,7 @@ double mcmc_run (mcmc_configuration config, double* data)
 		accepted_number++;
 		config.accepted[i] = 1;
 	    }
-            offset = i*n_param;
+            offset = i*n_param;x
             memcpy(results+offset, params, n_param*sizeof(double));
 	    config.probability[i] = data_prob;
 	    memcpy(proposed+offset, proposed_params, n_param*sizeof(double));
