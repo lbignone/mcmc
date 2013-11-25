@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <math.h>
 
 #include <gsl/gsl_rng.h>
 
@@ -9,6 +10,7 @@
 #include "hdf5_hl.h"
 
 #include "mcmc.h"
+
 
 /* Initialize the mcmc procedure. Allocate necessary memory 
  * 
@@ -198,9 +200,6 @@ double mcmc_run (mcmc_configuration config, double* data)
         config.current_posterior = (prior*data_prob);
     }
 
-    config.current_posterior = (config.joint_prior(params)
-				*data_prob);
-
     int ACCEPTED;
     double u;
     int i, j, k, offset;
@@ -260,7 +259,7 @@ double mcmc_run (mcmc_configuration config, double* data)
 		accepted_number++;
 		config.accepted[i] = 1;
 	    }
-            offset = i*n_param;x
+            offset = i*n_param;
             memcpy(results+offset, params, n_param*sizeof(double));
 	    config.probability[i] = data_prob;
 	    memcpy(proposed+offset, proposed_params, n_param*sizeof(double));
