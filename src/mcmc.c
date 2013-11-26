@@ -266,7 +266,8 @@ double mcmc_run (mcmc_configuration config, double* data)
         }
 	config.save_function(config);
     }
-    double acceptance_rate = accepted_number/(n_iter*n_times);
+    double acceptance_rate;
+    acceptance_rate = 1.0 * accepted_number/(n_iter*n_times);
     return acceptance_rate;
 }
 
