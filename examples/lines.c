@@ -54,7 +54,7 @@ double joint_prior(double* params)
 }
 
 /* Compute data probability given the values of T and nu*/
-double data_probability(double* data, double* params)
+double data_probability(double* data, double* params, double* chisq)
 {
 
     double n_rows = NROWS;
@@ -68,6 +68,9 @@ double data_probability(double* data, double* params)
     
     double sigma_L = 2.0;
     int i;
+
+    *chisq = 0.0;
+
     partial = 0;
     for (i=0; i<NROWS; i++ )
 	{
@@ -75,6 +78,8 @@ double data_probability(double* data, double* params)
 	    Ti = data[1+i*NCOLUMNS];
 	    fi = exp( -pow(nui - nu, 2.0) / (2*pow(sigma_L, 2.0)) );
 	    partial += pow(Ti - T*fi, 2.0);
+
+            *chisq += pow((Ti - T*fi)/sigma, 2.0);
 	}
     result = 
 	pow(2.0*M_PI, -n_rows/2.0) * pow(sigma, -n_rows)

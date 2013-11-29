@@ -141,9 +141,9 @@ void mcmc_set_joint_prior(mcmc_configuration* config,
  *                     double()(double*, double*)
  */
 void mcmc_set_data_probability(mcmc_configuration* config,
-                               double(*data_probability)(double*, double*))
+                               double(*data_probability)(double*, double*, double*))
 {
-    double (*p_data_probability)(double* data, double* params);
+    double (*p_data_probability)(double* data, double* params, double* chisq);
     p_data_probability = data_probability;
     config->data_probability = p_data_probability;
 }
@@ -185,10 +185,12 @@ double mcmc_run (mcmc_configuration config, double* data)
     double current_posterior;
     double data_prob;
     double prior;
+
+    double chisq;
    
     memcpy(params, config.parameters, n_param*sizeof(double));
 
-    data_prob = config.data_probability(data, params);
+    data_prob = config.data_probability(data, params, &chisq);
     prior = config.joint_prior(params);
 
     if(config.log_probability)
@@ -216,7 +218,7 @@ double mcmc_run (mcmc_configuration config, double* data)
 		    (config, params[j], j);
 	    }
 
-	    data_prob = config.data_probability(data, proposed_params);
+	    data_prob = config.data_probability(data, proposed_params, &chisq);
             prior = config.joint_prior(proposed_params);
             if (prior != 0.0)
             {    
@@ -261,7 +263,7 @@ double mcmc_run (mcmc_configuration config, double* data)
 	    }
             offset = i*n_param;
             memcpy(results+offset, params, n_param*sizeof(double));
-	    config.probability[i] = data_prob;
+	    config.probability[i] = chisq;
 	    memcpy(proposed+offset, proposed_params, n_param*sizeof(double));
         }
 	config.save_function(config);

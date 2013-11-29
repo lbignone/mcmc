@@ -21,7 +21,7 @@ struct mcmc_configuration
     double (*joint_prior)(double* params);
     double (**proposal_distributions)
     (mcmc_configuration config, double param, int param_num);
-    double (*data_probability)(double* data, double* params);
+    double (*data_probability)(double* data, double* params, double* chisq);
     void** proposal_distribution_args;
 
     int (*save_function)(mcmc_configuration config);
